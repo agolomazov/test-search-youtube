@@ -6,17 +6,17 @@ import debounce from 'lodash/debounce';
 
 const API_KEY = 'AIzaSyATQflWNhavrZvEk4liPUHGlVYAvmHeCSA';
 
-const debouncedSearch = (term, cb) => {
-	return debounce(() => {
-		return YTSearch(
-			{
-				key: API_KEY,
-				term,
-			},
-			data => cb(data)
-		);
-	}, 1000);
+const search = (term, cb) => {
+	YTSearch(
+		{
+			key: API_KEY,
+			term,
+		},
+		data => cb(data)
+	);
 };
+
+const debounceSearch = debounce(search, 500);
 
 class App extends Component {
 	state = {
@@ -27,16 +27,11 @@ class App extends Component {
 	handleChangeSearch = term => {
 		this.setState(prevState => {
 			if (!prevState.term !== term) {
-				const searchVideo = text => {
-					this.handleSearchVideos(text);
-				};
-
-				const getVideos = debouncedSearch(term, data =>
+				debounceSearch(term, videos => {
 					this.setState({
-						videos: data,
-					})
-				);
-				getVideos();
+						videos,
+					});
+				});
 				return {
 					...prevState,
 					term,
@@ -44,20 +39,6 @@ class App extends Component {
 			}
 			return null;
 		});
-	};
-
-	handleSearchVideos = term => {
-		YTSearch(
-			{
-				key: API_KEY,
-				term,
-			},
-			data => {
-				this.setState({
-					videos: data,
-				});
-			}
-		);
 	};
 
 	render() {
