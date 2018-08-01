@@ -1,40 +1,28 @@
 import React, { Component } from 'react';
 import SearchBar from './features/YoutubePlayeer/search-bar';
 import VideoList from './features/YoutubePlayeer/video-list';
-import YTSearch from 'youtube-api-search';
-import debounce from 'lodash/debounce';
-
-const API_KEY = 'AIzaSyATQflWNhavrZvEk4liPUHGlVYAvmHeCSA';
-
-const search = (term, cb) => {
-	YTSearch(
-		{
-			key: API_KEY,
-			term,
-		},
-		data => cb(data)
-	);
-};
-
-const debounceSearch = debounce(search, 500);
+import withDebounceSearch from './features/hoc/withDebounceSearch';
 
 class App extends Component {
 	state = {
 		videos: [],
 		term: '',
+		loading: false,
 	};
 
 	handleChangeSearch = term => {
 		this.setState(prevState => {
 			if (!prevState.term !== term) {
-				debounceSearch(term, videos => {
+				this.props.onSearch(term, videos => {
 					this.setState({
 						videos,
+						loading: false,
 					});
 				});
 				return {
 					...prevState,
 					term,
+					loading: true,
 				};
 			}
 			return null;
@@ -54,4 +42,4 @@ class App extends Component {
 	}
 }
 
-export default App;
+export default withDebounceSearch(1000)(App);
